@@ -97,6 +97,7 @@ class TrafficSignal:
         self.lanes = list(
             dict.fromkeys(self.sumo.trafficlight.getControlledLanes(self.id))
         )  # Remove duplicates and keep order
+        
         self.out_lanes = [link[0][1] for link in self.sumo.trafficlight.getControlledLinks(self.id) if link]
         self.out_lanes = list(set(self.out_lanes))
         self.lanes_length = {lane: self.sumo.lane.getLength(lane) for lane in self.lanes + self.out_lanes}
@@ -284,15 +285,17 @@ class TrafficSignal:
         return [min(1, queue) for queue in lanes_queue]
 
     def get_total_queued(self) -> int:
-        """Returns the total number of vehicles halting in the intersection."""
+        """Returns the total number of vehicles halting in the intersection.
+        
+        返回在交叉路口停车的车辆总数。"""
         return sum(self.sumo.lane.getLastStepHaltingNumber(lane) for lane in self.lanes)
-
+        
     def _get_veh_list(self):
         veh_list = []
         for lane in self.lanes:
             veh_list += self.sumo.lane.getLastStepVehicleIDs(lane)
         return veh_list
-
+    
     @classmethod
     def register_reward_fn(cls, fn: Callable):
         """Registers a reward function.
