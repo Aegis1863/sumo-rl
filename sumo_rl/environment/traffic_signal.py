@@ -83,7 +83,7 @@ class TrafficSignal:
         self.last_reward = None
         self.reward_fn = reward_fn
         self.sumo = sumo
-
+        
         if type(self.reward_fn) is str:
             if self.reward_fn in TrafficSignal.reward_fns.keys():
                 self.reward_fn = TrafficSignal.reward_fns[self.reward_fn]
@@ -104,7 +104,7 @@ class TrafficSignal:
 
         self.observation_space = self.observation_fn.observation_space()
         self.action_space = spaces.Discrete(self.num_green_phases)
-
+        
     def _build_phases(self):
         phases = self.sumo.trafficlight.getAllProgramLogics(self.id)[0].phases
         if self.env.fixed_ts:
@@ -246,7 +246,9 @@ class TrafficSignal:
         return avg_speed / len(vehs)
 
     def get_pressure(self):
-        """Returns the pressure (#veh leaving - #veh approaching) of the intersection."""
+        """Returns the pressure (#veh leaving - #veh approaching) of the intersection.
+        
+        返回交叉点的压力（#veh 离开 - #veh 接近）"""
         return sum(self.sumo.lane.getLastStepVehicleNumber(lane) for lane in self.out_lanes) - sum(
             self.sumo.lane.getLastStepVehicleNumber(lane) for lane in self.lanes
         )
