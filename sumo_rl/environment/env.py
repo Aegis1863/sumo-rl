@@ -400,15 +400,22 @@ class SumoEnvironment(gym.Env):
         self.sumo.simulationStep()
 
     def _get_system_info(self):
+        lanes = self.sumo.lane.getIDList()
         vehicles = self.sumo.vehicle.getIDList()
-        speeds = [self.sumo.vehicle.getSpeed(vehicle) for vehicle in vehicles]
+        # speeds = [self.sumo.vehicle.getSpeed(vehicle) for vehicle in vehicles]
         waiting_times = [self.sumo.vehicle.getWaitingTime(vehicle) for vehicle in vehicles]
+        travel_times = [self.sumo.vehicle.getTimeLoss(vehicle) for vehicle in vehicles]
+        queue = sum(self.sumo.lane.getLastStepHaltingNumber(lane) for lane in lanes)
+        throughput = len(vehicles)
         return {
             # In SUMO, a vehicle is considered halting if its speed is below 0.1 m/s
-            "system_total_stopped": sum(int(speed < 0.1) for speed in speeds),
-            "system_total_waiting_time": sum(waiting_times),
-            "system_mean_waiting_time": 0.0 if len(vehicles) == 0 else np.mean(waiting_times),
-            "system_mean_speed": 0.0 if len(vehicles) == 0 else np.mean(speeds),
+            # "system_total_stopped": sum(int(speed < 0.1) for speed in speeds),
+            # "system_total_waiting_time": sum(waiting_times),
+            "system_mean_travel_time": 0.0 if throughput == 0 else np.mean(travel_times),
+            "system_mean_queue": 0.0 if len(lanes) == 0 else np.mean(queue),
+            "system_mean_waiting_time": 0.0 if throughput == 0 else np.mean(waiting_times),
+            # "system_mean_speed": 0.0 if len(vehicles) == 0 else np.mean(speeds),
+            "system_throughput": throughput,
         }
 
     def _get_per_agent_info(self):
